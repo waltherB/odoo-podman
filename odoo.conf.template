@@ -1,7 +1,7 @@
 [options]
 admin_passwd = ${ODOO_MASTER_PASSWORD}
 data_dir = /var/lib/odoo
-addons_path = /mnt/extra-addons,/usr/lib/python3/site-packages/odoo/addons
+addons_path = /mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
 
 db_host = db
 db_port = 5432

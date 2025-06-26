@@ -20,7 +20,7 @@ services:
       retries: 10
 
   odoo:
-    image: docker.io/odoo:${ODOO_VERSION}
+    build: .
     container_name: odoo-app
     depends_on:
       db:

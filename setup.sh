@@ -7,6 +7,10 @@ green='\033[0;32m'
 red='\033[0;31m'
 reset='\033[0m'
 
+# Load Odoo port from .env
+ODOO_PORT=$(grep '^EXPOSED_ODOO_PORT=' .env | cut -d '=' -f2 | tr -d '"')
+ODOO_PORT=${ODOO_PORT:-8069}
+
 function usage() {
   echo -e "\nUsage: $0 [start|delete|help]"
   echo -e "  start   Start the Odoo 18 development environment"
@@ -17,7 +21,7 @@ function usage() {
 function start_env() {
   echo -e "${green}Starting Odoo 18 development environment...${reset}"
   podman-compose up -d
-  echo -e "${green}Odoo should be available at http://localhost:8069${reset}"
+  echo -e "${green}Odoo should be available at http://localhost:${ODOO_PORT}${reset}"
 }
 
 function delete_all() {

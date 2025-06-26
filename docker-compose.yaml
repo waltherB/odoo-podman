@@ -14,10 +14,10 @@ services:
     networks:
       - odoo-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
 
   odoo:
     image: docker.io/odoo:${ODOO_VERSION}
@@ -26,23 +26,39 @@ services:
       db:
         condition: service_healthy
     environment:
-      - HOST=db
-      - USER=${POSTGRES_USER}
-      - PASSWORD=${POSTGRES_PASSWORD}
-      - ODOO_ADMIN_PASSWORD=${ODOO_MASTER_PASSWORD}
+      # Database connection
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
-      # Force TCP connection instead of Unix socket
+
+      # Odoo configuration
+      - ODOO_ADMIN_PASSWORD=${ODOO_MASTER_PASSWORD}
+
+      # Force TCP connection
       - PGHOST=db
       - PGPORT=5432
+
+      # Additional optimizations
+      - UNACCENT=true
+      - DB_TEMPLATE=template0
     ports:
       - "${EXPOSED_ODOO_PORT}:8069"
     volumes:
       - ./addons:/mnt/extra-addons
-    command: >
-      sh -c "sleep 5  # Wait for PostgreSQL to be fully ready
-      && odoo"
+      - ./odoo.conf:/etc/odoo/odoo.conf
+      # Uncomment the next line to develop Odoo core (mount source):
+      # - ./odoo-src:/usr/lib/python3/site-packages/odoo
     networks:
       - odoo-network
+    command: >
+      bash -c "echo 'Waiting for PostgreSQL to be ready...';
+      until PGPASSWORD=$${DB_PASSWORD} psql -h db -U $${DB_USER} -d $${DB_NAME} -c 'SELECT 1' >/dev/null 2>&1; do
+        sleep 1;
+      done;
+      echo 'Starting Odoo...';
+      exec odoo"
 
 networks:
   odoo-network:

@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 services:
   db:
     image: docker.io/postgres:15
@@ -13,26 +13,34 @@ services:
       - "${EXPOSED_PG_PORT}:5432"
     networks:
       - odoo-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   odoo:
     image: docker.io/odoo:${ODOO_VERSION}
     container_name: odoo-app
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       - HOST=db
       - USER=${POSTGRES_USER}
       - PASSWORD=${POSTGRES_PASSWORD}
       - ODOO_ADMIN_PASSWORD=${ODOO_MASTER_PASSWORD}
       - DB_NAME=${POSTGRES_DB}
+      # Force TCP connection instead of Unix socket
+      - PGHOST=db
+      - PGPORT=5432
     ports:
       - "${EXPOSED_ODOO_PORT}:8069"
     volumes:
       - ./addons:/mnt/extra-addons
-      - ./odoo.conf.template:/etc/odoo/odoo.conf.template
-      - ./entrypoint.sh:/entrypoint.sh
-    entrypoint: ["/entrypoint.sh"]
-    command: ["odoo"]
+    command: >
+      sh -c "sleep 5  # Wait for PostgreSQL to be fully ready
+      && odoo"
     networks:
       - odoo-network
 

@@ -60,6 +60,7 @@ services:
     networks:
       - odoo-network
     entrypoint: ["/entrypoint.sh"]
+    command: ["/start-debugpy.sh"]
     command: ["odoo", "-c", "/etc/odoo/odoo.conf"]
 
 networks:

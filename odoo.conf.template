@@ -9,6 +9,10 @@ db_user = ${POSTGRES_USER}
 db_password = ${POSTGRES_PASSWORD}
 
 xmlrpc_port = 8069
-logfile = /var/log/odoo/odoo.log
-log_level = debug
+#logfile = /var/log/odoo/odoo.log
+#log_level = debug
+
 dev = all 
+logfile = 
+log_handler = :INFO
+log_level = info

@@ -1,0 +1,11 @@
+# Example Python dependencies for Odoo modules
+# Uncomment or add the packages your modules need
+
+# JWT authentication support
+pyjwt==2.8.0
+
+# Additional common packages (uncomment as needed)
+requests==2.31.0
+python-dateutil==2.8.2
+pytz==2023.3
+cryptography==41.0.7 

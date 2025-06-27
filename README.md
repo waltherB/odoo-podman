@@ -30,6 +30,7 @@ This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers opti
 - [Troubleshooting](#troubleshooting)
   - [Common Issues](#common-issues)
   - [Debug Commands](#debug-commands)
+- [FAQ](#faq)
 - [Features](#features)
 - [Contributing](#contributing)
 - [License](#license)
@@ -109,20 +110,31 @@ podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpin
    # Edit .env to customize your settings
    nano .env
    ```
+   > **Note:** The `.env` file is in `.gitignore` for security. Always create your own `.env` from `sample-.env`.
 
-3. **Configure environment**:
+3. **(Optional) Add Python dependencies**:
+   ```bash
+   # Copy the sample requirements file if you need extra Python packages
+   cp sample-requirements.txt requirements.txt
+   # Edit requirements.txt as needed
+   nano requirements.txt
+   ```
+
+4. **Configure environment**:
    - Edit `.env` to set ports, passwords, and database name
    - Place custom modules in `./addons` directory
 
-4. **Start the development environment**:
+5. **Start the development environment**:
    ```bash
    ./setup.sh start
    ```
 
-5. **Access Odoo**:
+6. **Access Odoo**:
    - URL: `http://localhost:8069` (or your custom port from `.env`)
    - Email: `admin`
    - Password: Value of `ODOO_MASTER_PASSWORD` from `.env`
+
+> **For advanced IDE integration and debugging, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).**
 
 ## Development Modes
 
@@ -171,6 +183,8 @@ This mode allows you to modify Odoo's core source code:
    ```
 
 **Note**: When developing core, changes to Odoo source code require container restart to take effect.
+
+> **Tip:** For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).
 
 ## Project Structure
 
@@ -281,6 +295,45 @@ podman ps -a
    podman restart odoo-app
    ```
 
+### Adding Python Dependencies
+
+If your custom modules require additional Python packages (e.g., `pyjwt` for JWT authentication), you can add them to a `requirements.txt` file:
+
+1. **Create requirements.txt**:
+   ```bash
+   # Example: Add JWT support for authentication
+   cp sample-requirements.txt requirements.txt
+   echo "pyjwt==2.8.0" >> requirements.txt
+   ```
+
+2. **Update Dockerfile** to install requirements:
+   ```dockerfile
+   FROM odoo:18
+
+   USER root
+   RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && rm -rf /var/lib/apt/lists/*
+   
+   # Copy and install Python requirements
+   COPY requirements.txt /tmp/requirements.txt
+   RUN pip3 install -r /tmp/requirements.txt
+   
+   USER odoo
+   ```
+
+3. **Rebuild the Docker image**:
+   ```bash
+   # Use the setup script to rebuild and start
+   ./setup.sh rebuild
+   
+   # Or manually rebuild
+   podman-compose build --no-cache
+   podman-compose up -d
+   ```
+
+**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect. Use `./setup.sh rebuild` for convenience.
+
+> **For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).**
+
 ### Modifying Odoo Configuration
 
 Edit `odoo.conf.template` and restart the container. The template supports environment variable substitution:
@@ -380,6 +433,28 @@ podman machine inspect
 podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpine ls /workspace
 ```
 
+> **For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).**
+
+## FAQ
+
+**Q: How do I reset my database and start fresh?**
+A: Run `./setup.sh delete` to remove all containers, volumes, and data. Then run `./setup.sh start` to recreate everything.
+
+**Q: How do I add new Python dependencies for my custom modules?**
+A: Add them to `requirements.txt` (copy from `sample-requirements.txt` if needed), then run `./setup.sh rebuild`.
+
+**Q: Where do I put my custom Odoo modules?**
+A: Place them in the `addons/` directory in your project root.
+
+**Q: How do I enable debugging with VSCode?**
+A: See the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md) for step-by-step instructions.
+
+**Q: Why is my .env file missing after cloning?**
+A: For security, `.env` is not tracked in git. Copy `sample-.env` to `.env` and edit as needed.
+
+**Q: How do I use this on an external disk?**
+A: See the [Podman Machine Configuration](#podman-machine-configuration) section for instructions on mounting external volumes.
+
 ## Features
 
 - **Dynamic Configuration**: Uses `envsubst` for environment variable substitution
@@ -400,42 +475,4 @@ podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpin
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-### Adding Python Dependencies
-
-If your custom modules require additional Python packages (e.g., `pyjwt` for JWT authentication), you can add them to a `requirements.txt` file:
-
-1. **Create requirements.txt**:
-   ```bash
-   # Example: Add JWT support for authentication
-   echo "pyjwt==2.8.0" > requirements.txt
-   ```
-
-2. **Update Dockerfile** to install requirements:
-   ```dockerfile
-   FROM odoo:18
-
-   USER root
-   RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && rm -rf /var/lib/apt/lists/*
-   
-   # Copy and install Python requirements
-   COPY requirements.txt /tmp/requirements.txt
-   RUN pip3 install -r /tmp/requirements.txt
-   
-   USER odoo
-   ```
-
-3. **Rebuild the Docker image**:
-   ```bash
-   # Use the setup script to rebuild and start
-   ./setup.sh rebuild
-   
-   # Or manually rebuild
-   podman-compose build --no-cache
-   podman-compose up -d
-   ```
-
-**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect. Use `./setup.sh rebuild` for convenience.
-
-### Modifying Odoo Configuration
+This project is licensed under the MIT License - see the [LICENSE](./LICENSE) file for details.

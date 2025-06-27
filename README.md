@@ -4,6 +4,7 @@ This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers opti
 
 ## Table of Contents
 
+- [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md)
 - [Prerequisites](#prerequisites)
 - [Podman Machine Configuration](#podman-machine-configuration)
   - [For Projects on External Disks](#for-projects-on-external-disks)

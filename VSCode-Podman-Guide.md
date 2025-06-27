@@ -5,17 +5,22 @@ This guide shows how to set up **Visual Studio Code** (VS Code) for Odoo develop
 ---
 
 ## Table of Contents
-- [Prerequisites](#prerequisites)
-- [Clone the Repository](#clone-the-repository)
-- [Start the Podman Environment](#start-the-podman-environment)
-- [Open the Project in VS Code](#open-the-project-in-vs-code)
-- [Install Odoo Extension for VS Code](#install-odoo-extension-for-vs-code)
-- [Configure Python Environment](#configure-python-environment)
-- [Debugging Odoo with VS Code + debugpy](#debugging-odoo-with-vs-code--debugpy)
-- [Automate debugpy in Container](#automate-debugpy-in-container)
-- [Stop the Environment](#stop-the-environment)
-- [Optional: Dev Containers Support](#optional-dev-containers-support)
-- [Resources](#resources)
+- [🧠 VS Code + Podman for Odoo Development](#-vs-code--podman-for-odoo-development)
+  - [Table of Contents](#table-of-contents)
+  - [🚀 Prerequisites](#-prerequisites)
+  - [🧱 Clone the Repository](#-clone-the-repository)
+  - [⚙️ Start the Podman Environment](#️-start-the-podman-environment)
+  - [🛠 Open the Project in VS Code](#-open-the-project-in-vs-code)
+  - [🧩 Install Odoo Extension for VS Code](#-install-odoo-extension-for-vs-code)
+  - [🧠 Configure Python Environment](#-configure-python-environment)
+    - [Create a virtual environment:](#create-a-virtual-environment)
+    - [VS Code settings (`.vscode/settings.json`):](#vs-code-settings-vscodesettingsjson)
+  - [🐞 Debugging Odoo with VS Code + debugpy](#-debugging-odoo-with-vs-code--debugpy)
+    - [Add `.vscode/launch.json`:](#add-vscodelaunchjson)
+  - [🧪 Automate debugpy in Container](#-automate-debugpy-in-container)
+  - [🧼 Stop the Environment](#-stop-the-environment)
+  - [🧪 Optional: Dev Containers Support](#-optional-dev-containers-support)
+  - [📚 Resources](#-resources)
 
 ---
 
@@ -151,6 +156,12 @@ Then update `docker-compose.yaml`:
 ```yaml
 command: ["/start-debugpy.sh"]
 ```
+
+**Finally, start your environment:**
+```bash
+./setup.sh start
+```
+This will launch Odoo with debugpy enabled and ready for VS Code debugging.
 
 ---
 

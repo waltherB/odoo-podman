@@ -69,16 +69,25 @@ podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpin
    cd odoo-podman
    ```
 
-2. **Configure environment**:
+2. **Create environment file**:
+   ```bash
+   # Copy the sample environment file
+   cp sample-.env .env
+   
+   # Edit .env to customize your settings
+   nano .env
+   ```
+
+3. **Configure environment**:
    - Edit `.env` to set ports, passwords, and database name
    - Place custom modules in `./addons` directory
 
-3. **Start the development environment**:
+4. **Start the development environment**:
    ```bash
    ./setup.sh start
    ```
 
-4. **Access Odoo**:
+5. **Access Odoo**:
    - URL: `http://localhost:8069` (or your custom port from `.env`)
    - Email: `admin`
    - Password: Value of `ODOO_MASTER_PASSWORD` from `.env`
@@ -148,6 +157,13 @@ odoo-podman/
 
 ## Environment Variables (.env)
 
+Copy `sample-.env` to `.env` and customize the values for your environment:
+
+```bash
+cp sample-.env .env
+```
+
+**Example configuration**:
 ```bash
 # Odoo version
 ODOO_VERSION=18.0
@@ -162,6 +178,8 @@ ODOO_MASTER_PASSWORD=admin
 EXPOSED_ODOO_PORT=8069
 EXPOSED_PG_PORT=5432
 ```
+
+**Note**: The `.env` file is in `.gitignore` to keep sensitive information out of version control. Always create your own `.env` file from the sample.
 
 ## Management Commands
 

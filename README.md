@@ -190,16 +190,40 @@ This mode allows you to modify Odoo's core source code:
 
 ```
 odoo-podman/
-├── addons/                    # Your custom Odoo modules
-├── odoo-src/                  # Odoo core source (for core development)
-├── docker-compose.yaml        # Container orchestration
-├── Dockerfile                 # Custom Odoo image with fonts
-├── odoo.conf.template         # Odoo configuration template
-├── entrypoint.sh              # Container entrypoint script
-├── setup.sh                   # Environment management script
-├── .env                       # Environment variables
-└── postgres-data/             # PostgreSQL data (auto-created)
+├── addons/                        # Your custom Odoo modules
+│   └── home_page/                 # Example custom module
+│       ├── __init__.py
+│       ├── __manifest__.py
+│       ├── models/
+│       │   ├── __init__.py
+│       │   └── home_page.py
+│       ├── security/
+│       │   └── ir.model.access.csv
+│       └── views/
+│           └── home_page_views.xml
+├── docker-compose.yaml            # Container orchestration
+├── Dockerfile                     # Custom Odoo image with fonts and debugpy support
+├── entrypoint.sh                  # Container entrypoint script
+├── odoo.conf.template             # Odoo configuration template (envsubst)
+├── sample-.env                    # Example environment file (copy to .env)
+├── sample-requirements.txt        # Example Python dependencies file
+├── setup.sh                       # Environment management script (start, rebuild, delete)
+├── VSCode-Podman-Guide.md         # Guide for VSCode + Podman integration and debugging
+├── README.md                      # Main documentation
+├── LICENSE                        # MIT License
+├── postgres-data/                 # PostgreSQL data (auto-created, gitignored)
+├── vscode-odoo-podman-setup/      # VSCode/Devcontainer config (optional, advanced)
+│   ├── .devcontainer/
+│   │   └── devcontainer.json
+│   ├── .vscode/
+│   │   └── launch.json
+│   └── start-debugpy.sh
+└── .gitignore                     # Git ignore rules
 ```
+
+- **Note:** The `.env` file is not tracked in git; copy from `sample-.env`.
+- **Note:** The `requirements.txt` file is optional; copy from `sample-requirements.txt` if needed.
+- **See also:** [VSCode-Podman-Guide.md](./VSCode-Podman-Guide.md) for advanced IDE and debugging setup.
 
 ## Environment Variables (.env)
 

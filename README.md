@@ -186,8 +186,11 @@ EXPOSED_PG_PORT=5432
 ### Using setup.sh (Recommended)
 
 ```bash
-# Start the environment
+# Start the environment (uses existing image)
 ./setup.sh start
+
+# Rebuild image and start (use when adding Python dependencies)
+./setup.sh rebuild
 
 # Stop and delete everything (with confirmation)
 ./setup.sh delete
@@ -393,14 +396,14 @@ If your custom modules require additional Python packages (e.g., `pyjwt` for JWT
 
 3. **Rebuild the Docker image**:
    ```bash
-   # Force rebuild with new dependencies
-   podman-compose build --no-cache
+   # Use the setup script to rebuild and start
+   ./setup.sh rebuild
    
-   # Or use the setup script
-   ./setup.sh delete
-   ./setup.sh start
+   # Or manually rebuild
+   podman-compose build --no-cache
+   podman-compose up -d
    ```
 
-**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect.
+**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect. Use `./setup.sh rebuild` for convenience.
 
 ### Modifying Odoo Configuration

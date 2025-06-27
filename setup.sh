@@ -12,14 +12,22 @@ ODOO_PORT=$(grep '^EXPOSED_ODOO_PORT=' .env | cut -d '=' -f2 | tr -d '"')
 ODOO_PORT=${ODOO_PORT:-8069}
 
 function usage() {
-  echo -e "\nUsage: $0 [start|delete|help]"
+  echo -e "\nUsage: $0 [start|rebuild|delete|help]"
   echo -e "  start   Start the Odoo 18 development environment"
+  echo -e "  rebuild Rebuild the Docker image and start the environment"
   echo -e "  delete  Delete all containers, volumes, and data (DANGEROUS)"
   echo -e "  help    Show this help message\n"
 }
 
 function start_env() {
   echo -e "${green}Starting Odoo 18 development environment...${reset}"
+  podman-compose up -d
+  echo -e "${green}Odoo should be available at http://localhost:${ODOO_PORT}${reset}"
+}
+
+function rebuild_env() {
+  echo -e "${green}Rebuilding Docker image and starting Odoo 18 development environment...${reset}"
+  podman-compose build --no-cache
   podman-compose up -d
   echo -e "${green}Odoo should be available at http://localhost:${ODOO_PORT}${reset}"
 }
@@ -35,6 +43,9 @@ function delete_all() {
 case "$1" in
   start)
     start_env
+    ;;
+  rebuild)
+    rebuild_env
     ;;
   delete)
     read -p "Are you sure you want to delete ALL data? This cannot be undone! (y/N): " confirm

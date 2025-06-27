@@ -366,3 +366,41 @@ podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpin
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+### Adding Python Dependencies
+
+If your custom modules require additional Python packages (e.g., `pyjwt` for JWT authentication), you can add them to a `requirements.txt` file:
+
+1. **Create requirements.txt**:
+   ```bash
+   # Example: Add JWT support for authentication
+   echo "pyjwt==2.8.0" > requirements.txt
+   ```
+
+2. **Update Dockerfile** to install requirements:
+   ```dockerfile
+   FROM odoo:18
+
+   USER root
+   RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && rm -rf /var/lib/apt/lists/*
+   
+   # Copy and install Python requirements
+   COPY requirements.txt /tmp/requirements.txt
+   RUN pip3 install -r /tmp/requirements.txt
+   
+   USER odoo
+   ```
+
+3. **Rebuild the Docker image**:
+   ```bash
+   # Force rebuild with new dependencies
+   podman-compose build --no-cache
+   
+   # Or use the setup script
+   ./setup.sh delete
+   ./setup.sh start
+   ```
+
+**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect.
+
+### Modifying Odoo Configuration

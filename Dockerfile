@@ -5,6 +5,9 @@ RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6
 
 # Copy and install Python requirements (if requirements.txt exists)
 COPY requirements.txt /tmp/requirements.txt
-RUN if [ -f /tmp/requirements.txt ]; then pip3 install -r /tmp/requirements.txt; fi
+RUN if [ -f /tmp/requirements.txt ]; then pip3 install --break-system-packages -r /tmp/requirements.txt; fi
+
+COPY start-debugpy.sh /start-debugpy.sh
+RUN chmod +x /start-debugpy.sh
 
 USER odoo 

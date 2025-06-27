@@ -130,13 +130,26 @@ Create `start-debugpy.sh`:
 pip install debugpy
 exec python3 -m debugpy --listen 0.0.0.0:5678 --wait-for-client odoo-bin -c /etc/odoo/odoo.conf
 ```
+
 Make it executable:
 ```bash
 chmod +x start-debugpy.sh
 ```
+
+**Add it to your Docker image:**
+1. In your `Dockerfile`, add:
+   ```dockerfile
+   COPY start-debugpy.sh /start-debugpy.sh
+   RUN chmod +x /start-debugpy.sh
+   ```
+2. Rebuild your image:
+   ```bash
+   ./setup.sh rebuild
+   ```
+
 Then update `docker-compose.yaml`:
 ```yaml
-command: ["./start-debugpy.sh"]
+command: ["/start-debugpy.sh"]
 ```
 
 ---

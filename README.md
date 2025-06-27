@@ -2,6 +2,37 @@
 
 This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers optimized for Apple Silicon, supporting both custom module development and Odoo core development.
 
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Podman Machine Configuration](#podman-machine-configuration)
+  - [For Projects on External Disks](#for-projects-on-external-disks)
+  - [Resource Optimization](#resource-optimization)
+  - [Verification](#verification)
+- [Quick Start](#quick-start)
+- [Development Modes](#development-modes)
+  - [Custom Module Development (Default)](#custom-module-development-default)
+  - [Odoo Core Development](#odoo-core-development)
+- [Project Structure](#project-structure)
+- [Environment Variables (.env)](#environment-variables-env)
+- [Management Commands](#management-commands)
+  - [Using setup.sh (Recommended)](#using-setupsh-recommended)
+  - [Manual Commands](#manual-commands)
+- [Customization](#customization)
+  - [Adding Custom Modules](#adding-custom-modules)
+  - [Adding Python Dependencies](#adding-python-dependencies)
+  - [Modifying Odoo Configuration](#modifying-odoo-configuration)
+  - [Changing Ports](#changing-ports)
+- [Apple Silicon Optimization](#apple-silicon-optimization)
+  - [Resource Allocation](#resource-allocation)
+  - [Performance Notes](#performance-notes)
+- [Troubleshooting](#troubleshooting)
+  - [Common Issues](#common-issues)
+  - [Debug Commands](#debug-commands)
+- [Features](#features)
+- [Contributing](#contributing)
+- [License](#license)
+
 ## Prerequisites
 
 1. **Podman installed**: `brew install podman`

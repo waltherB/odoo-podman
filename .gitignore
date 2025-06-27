@@ -1,2 +1,3 @@
 # Ignore all content in postgres-data directory
 postgres-data/ 
+.env

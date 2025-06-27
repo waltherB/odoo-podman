@@ -14,6 +14,53 @@ This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers opti
 
 3. **Podman Compose**: `brew install podman-compose`
 
+## Podman Machine Configuration
+
+### For Projects on External Disks
+
+If your project is located on an external disk (SSD, USB drive, etc.), you need to configure Podman machine with volume mounting:
+
+```bash
+# Stop and remove existing machine
+podman machine stop
+podman machine rm -f
+
+# Initialize new machine with volume mounting and optimized resources
+podman machine init --cpus 4 --memory 8192 --volume /Volumes/SSD:/Volumes/SSD
+
+# Start the machine
+podman machine start
+```
+
+**Note**: Replace `/Volumes/SSD` with the actual path to your external disk where the project is located.
+
+### Resource Optimization
+
+For better performance on Apple Silicon (M1/M2/M3):
+
+```bash
+# Stop machine
+podman machine stop
+
+# Configure resources
+podman machine set --cpus 4 --memory 8192
+
+# Start machine
+podman machine start
+```
+
+### Verification
+
+Check that your external disk is accessible:
+
+```bash
+# List mounted volumes
+podman machine inspect
+
+# Test access to your project directory
+podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpine ls /workspace
+```
+
 ## Quick Start
 
 1. **Clone or setup the project**:
@@ -251,6 +298,11 @@ podman machine start
    chmod -R a+rwx postgres-data
    ```
 
+6. **External disk access issues**:
+   - Ensure Podman machine is configured with volume mounting
+   - Check machine configuration: `podman machine inspect`
+   - Reinitialize machine if needed with proper volume flags
+
 ### Debug Commands
 
 ```bash
@@ -266,6 +318,13 @@ podman exec odoo-app psql -h db -U odoo -d postgres -c "SELECT 1"
 
 # Check available fonts
 podman exec odoo-app fc-list
+
+# Check Podman machine status
+podman machine list
+podman machine inspect
+
+# Test external disk access
+podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpine ls /workspace
 ```
 
 ## Features
@@ -276,6 +335,7 @@ podman exec odoo-app fc-list
 - **ARM64 Optimized**: Custom Dockerfile for Apple Silicon
 - **Flexible Setup**: Supports both custom modules and core development
 - **Easy Management**: Simple setup script for common operations
+- **External Disk Support**: Proper Podman machine configuration for projects on external storage
 
 ## Contributing
 

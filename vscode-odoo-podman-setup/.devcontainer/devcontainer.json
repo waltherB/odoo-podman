@@ -1,0 +1,19 @@
+{
+  "name": "Odoo Dev (Podman)",
+  "context": "..",
+  "dockerFile": "../Dockerfile",
+  "workspaceFolder": "/opt/odoo",
+  "runArgs": ["--network", "host"],
+  "mounts": [
+    "source=${localWorkspaceFolder}/addons,target=/opt/odoo/custom-addons,type=bind,consistency=cached"
+  ],
+  "settings": {
+    "python.pythonPath": "/usr/bin/python3"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "odoo-ide.vscode-odoo"
+  ],
+  "postCreateCommand": "pip install -r requirements.txt"
+}

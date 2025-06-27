@@ -1,160 +1,290 @@
 # Odoo 18 Development Environment (Podman)
 
-This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers optimized for Apple Silicon.
+This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers optimized for Apple Silicon, supporting both custom module development and Odoo core development.
 
 ## Prerequisites
 
-1. Podman installed: `brew install podman`
+1. **Podman installed**: `brew install podman`
 
-2. Podman machine initialized:
-   
+2. **Podman machine initialized**:
    ```bash
    podman machine init
    podman machine start
    ```
 
-## Setup Instructions
+3. **Podman Compose**: `brew install podman-compose`
 
-1. Create project directory:
-   
-   bash
-- mkdir odoo-podman && cd odoo-podman
-  mkdir addons postgres-data
-  touch .env docker-compose.yaml odoo.conf README.md
+## Quick Start
 
-- Copy contents to respective files:
-  
-  - Populate `.env`, `docker-compose.yaml`, and `odoo.conf` with the provided configurations
-  
-  - Place this README in the project root
+1. **Clone or setup the project**:
+   ```bash
+   git clone <your-repo-url>
+   cd odoo-podman
+   ```
 
-- Configure environment:
-  
-  - Edit `.env` to set ports, passwords, and database name
-  
-  - Place custom modules in `./addons` directory
-  
-  - Configure additional Odoo settings in `odoo.conf` if needed
+2. **Configure environment**:
+   - Edit `.env` to set ports, passwords, and database name
+   - Place custom modules in `./addons` directory
 
-- Start containers:
-  
-  bash
-1. podman-compose up -d
+3. **Start the development environment**:
+   ```bash
+   ./setup.sh start
+   ```
 
-2. Access applications:
-   
-   - Odoo: [http://localhost:18069](http://localhost:18069)
-   
-   - PostgreSQL: `localhost:15432` (use credentials from .env)
+4. **Access Odoo**:
+   - URL: `http://localhost:8069` (or your custom port from `.env`)
+   - Email: `admin`
+   - Password: Value of `ODOO_MASTER_PASSWORD` from `.env`
+
+## Development Modes
+
+### Custom Module Development (Default)
+
+This mode is perfect for developing your own Odoo modules:
+
+- **Custom modules**: Place your modules in the `./addons` directory
+- **Core Odoo**: Uses the official Odoo 18 image with built-in core modules
+- **Configuration**: Uses `odoo.conf.template` with environment variable substitution
+
+**Setup**:
+```bash
+# Your custom modules go here
+mkdir -p addons/my_module
+# Start the environment
+./setup.sh start
+```
+
+### Odoo Core Development
+
+This mode allows you to modify Odoo's core source code:
+
+1. **Clone Odoo source**:
+   ```bash
+   # Clone Odoo 18 source code
+   git clone https://github.com/odoo/odoo.git odoo-src
+   cd odoo-src
+   git checkout 18.0
+   cd ..
+   ```
+
+2. **Update docker-compose.yaml**:
+   ```yaml
+   volumes:
+     - ./addons:/mnt/extra-addons
+     - ./odoo.conf.template:/etc/odoo/odoo.conf.template
+     - ./entrypoint.sh:/entrypoint.sh
+     # Uncomment for core development:
+     - ./odoo-src:/usr/lib/python3/dist-packages/odoo
+   ```
+
+3. **Start the environment**:
+   ```bash
+   ./setup.sh start
+   ```
+
+**Note**: When developing core, changes to Odoo source code require container restart to take effect.
+
+## Project Structure
+
+```
+odoo-podman/
+├── addons/                    # Your custom Odoo modules
+├── odoo-src/                  # Odoo core source (for core development)
+├── docker-compose.yaml        # Container orchestration
+├── Dockerfile                 # Custom Odoo image with fonts
+├── odoo.conf.template         # Odoo configuration template
+├── entrypoint.sh              # Container entrypoint script
+├── setup.sh                   # Environment management script
+├── .env                       # Environment variables
+└── postgres-data/             # PostgreSQL data (auto-created)
+```
+
+## Environment Variables (.env)
+
+```bash
+# Odoo version
+ODOO_VERSION=18.0
+
+# Database configuration
+POSTGRES_DB=postgres
+POSTGRES_USER=odoo
+POSTGRES_PASSWORD=odoo
+ODOO_MASTER_PASSWORD=admin
+
+# Port configuration
+EXPOSED_ODOO_PORT=8069
+EXPOSED_PG_PORT=5432
+```
 
 ## Management Commands
 
-- **Stop containers**:
-  
-  bash
+### Using setup.sh (Recommended)
 
-- podman-compose down
+```bash
+# Start the environment
+./setup.sh start
 
-- **View Odoo logs**:
-  
-  bash
+# Stop and delete everything (with confirmation)
+./setup.sh delete
 
-- podman logs odoo-app
+# Show help
+./setup.sh help
+```
 
-- **Access Odoo container shell**:
-  
-  bash
+### Manual Commands
 
-- podman exec -it odoo-app /bin/bash
+```bash
+# Start containers
+podman-compose up -d
 
-- **Restart Odoo service**:
-  
-  bash
+# Stop containers
+podman-compose down
 
-- podman restart odoo-app
+# View logs
+podman-compose logs -f
 
-- **Backup database**:
-  
-  bash
+# Rebuild custom image
+podman-compose build --no-cache
 
-- podman exec odoo-app odoo backup --backup-dir=/tmp
+# Access Odoo container shell
+podman exec -it odoo-app /bin/bash
 
-- **Check container status**:
-  
-  bash
-
-- podman ps -a
+# Check container status
+podman ps -a
+```
 
 ## Customization
 
-- **Add modules**: Place custom Odoo modules in `./addons` directory
+### Adding Custom Modules
 
-- **Modify config**: Edit `odoo.conf` and restart container
+1. **Create your module structure**:
+   ```bash
+   mkdir -p addons/my_module
+   cd addons/my_module
+   ```
 
-- **Change ports**: Update `EXPOSED_ODOO_PORT`/`EXPOSED_PG_PORT` in `.env`
+2. **Create `__manifest__.py`**:
+   ```python
+   {
+       'name': 'My Module',
+       'version': '1.0',
+       'category': 'Customizations',
+       'summary': 'My custom Odoo module',
+       'depends': ['base'],
+       'data': [],
+       'installable': True,
+   }
+   ```
 
-- **Adjust passwords**: Modify `ODOO_MASTER_PASSWORD` and `POSTGRES_PASSWORD` in `.env`
+3. **Restart Odoo** to load the new module:
+   ```bash
+   podman restart odoo-app
+   ```
 
-- **Use different Odoo version**: Change `ODOO_VERSION` in `.env`
+### Modifying Odoo Configuration
 
-- **Add Python dependencies**: Create `requirements.txt` in project root and rebuild containers
+Edit `odoo.conf.template` and restart the container. The template supports environment variable substitution:
 
-## Notes for Apple Silicon
+```ini
+[options]
+admin_passwd = ${ODOO_MASTER_PASSWORD}
+addons_path = /mnt/extra-addons,/usr/lib/python3/dist-packages/odoo/addons
+db_host = db
+db_user = ${POSTGRES_USER}
+db_password = ${POSTGRES_PASSWORD}
+dev = all
+```
 
-1. **ARM64 Compatibility**:
-   
-   - Uses ARM64 images for Odoo and PostgreSQL
-   
-   - Optimized for M1/M2 chip performance
+### Changing Ports
 
-2. **Resource Allocation** (recommended):
-   
-   bash
-- podman machine stop
-  podman machine set --cpus 4 --memory 8192
-  podman machine start
+Update the `EXPOSED_ODOO_PORT` in your `.env` file and restart:
 
-- **File System Performance**:
-  
-  - Volume mounts may have slower performance on macOS
-  
-  - For better performance:
-    
-    - Use `:delegated` flag for volumes (not always available in Podman)
-    
-    - Consider storing code in container-managed volumes
+```bash
+# Edit .env
+EXPOSED_ODOO_PORT=8080
 
-- **Permission Handling**:
-  
-  - If encountering permission issues:
-  
-  bash
-1. chmod -R a+rwx postgres-data
+# Restart
+./setup.sh delete
+./setup.sh start
+```
 
-2. **Known Issues**:
-   
-   - First startup may take longer due to ARM64 image optimizations
-   
-   - File change notifications may be less efficient than on Linux
+## Apple Silicon Optimization
+
+### Resource Allocation
+
+For better performance on M1/M2/M3:
+
+```bash
+podman machine stop
+podman machine set --cpus 4 --memory 8192
+podman machine start
+```
+
+### Performance Notes
+
+- **Volume mounts**: May have slower performance on macOS
+- **First startup**: Takes longer due to ARM64 image optimizations
+- **File watching**: Less efficient than on Linux
 
 ## Troubleshooting
 
-- **Port conflicts**: Change ports in `.env` file
+### Common Issues
 
-- **Startup failures**: Check logs with `podman logs odoo-app`
+1. **Port conflicts**:
+   - Change ports in `.env` file
+   - Check if ports are already in use: `lsof -i :8069`
 
-- **Database connection issues**: Verify credentials match in `.env` and `odoo.conf`
+2. **Database connection issues**:
+   - Verify credentials in `.env` match `odoo.conf.template`
+   - Check if database exists: `podman exec odoo-db psql -U odoo -l`
 
-- **Permission denied**: Ensure directory permissions for `postgres-data`
+3. **Module loading issues**:
+   - Check Odoo logs: `podman logs odoo-app`
+   - Verify module structure and `__manifest__.py`
 
-- **Module loading issues**: Check Odoo logs for Python errors
+4. **Font warnings**:
+   - The setup includes font packages to minimize PDF generation warnings
+   - Some warnings may still appear but are non-critical
 
-## Accessing Odoo
+5. **Permission issues**:
+   ```bash
+   chmod -R a+rwx postgres-data
+   ```
 
-After startup:
+### Debug Commands
 
-- URL: `http://localhost:18069` (or your custom port)
+```bash
+# Check container logs
+podman logs odoo-app
+podman logs odoo-db
 
-- Email: `admin`
+# Check generated Odoo config
+podman exec odoo-app cat /etc/odoo/odoo.conf
 
-- Password: Value of `ODOO_MASTER_PASSWORD` from `.env`
+# Test database connection
+podman exec odoo-app psql -h db -U odoo -d postgres -c "SELECT 1"
+
+# Check available fonts
+podman exec odoo-app fc-list
+```
+
+## Features
+
+- **Dynamic Configuration**: Uses `envsubst` for environment variable substitution
+- **Font Support**: Includes font packages for proper PDF generation
+- **Development Mode**: Full developer features enabled (`dev = all`)
+- **ARM64 Optimized**: Custom Dockerfile for Apple Silicon
+- **Flexible Setup**: Supports both custom modules and core development
+- **Easy Management**: Simple setup script for common operations
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test with both custom modules and core development
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

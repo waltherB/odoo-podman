@@ -1,5 +1,9 @@
 FROM odoo:18
 
+# Explicitly set shell to the default /bin/sh -c for broader compatibility
+# This can help avoid issues with base image SHELL instructions when building for OCI format.
+SHELL ["/bin/sh", "-c"]
+
 USER root
 RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && rm -rf /var/lib/apt/lists/*
 

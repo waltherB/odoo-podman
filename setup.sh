@@ -12,14 +12,24 @@ ODOO_PORT=$(grep '^EXPOSED_ODOO_PORT=' .env | cut -d '=' -f2 | tr -d '"')
 ODOO_PORT=${ODOO_PORT:-8069}
 
 # Determine which compose command to use
-if command -v podman-compose &> /dev/null; then
-    COMPOSE_CMD="podman-compose"
-elif command -v docker-compose &> /dev/null; then
-    COMPOSE_CMD="docker-compose"
+has_podman_compose=$(command -v podman-compose &> /dev/null && echo true || echo false)
+has_docker_compose=$(command -v docker-compose &> /dev/null && echo true || echo false)
+
+if [ "$has_podman_compose" = true ] && [ "$has_docker_compose" = true ]; then
+  echo -e "${green}Both podman-compose and docker-compose found.${reset}"
+  read -p "Which one would you like to use? (p for podman-compose, d for docker-compose) [p]: " choice
+  case "$choice" in
+    d|D ) COMPOSE_CMD="docker-compose";;
+    * ) COMPOSE_CMD="podman-compose";;
+  esac
+elif [ "$has_podman_compose" = true ]; then
+  COMPOSE_CMD="podman-compose"
+elif [ "$has_docker_compose" = true ]; then
+  COMPOSE_CMD="docker-compose"
 else
-    echo -e "${red}Warning: Neither podman-compose nor docker-compose found in PATH.${reset}"
-    echo -e "Defaulting to 'podman-compose'. Please install it or docker-compose."
-    COMPOSE_CMD="podman-compose"
+  echo -e "${red}Warning: Neither podman-compose nor docker-compose found in PATH.${reset}"
+  echo -e "Defaulting to 'podman-compose'. Please install podman-compose or docker-compose."
+  COMPOSE_CMD="podman-compose"
 fi
 echo -e "${green}Using compose command: ${COMPOSE_CMD}${reset}"
 

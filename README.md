@@ -294,9 +294,13 @@ EXPOSED_PG_PORT=5432
 
 ### Using setup.sh (Recommended)
 
-The `setup.sh` script is configured to use `podman-compose`. If you primarily use `docker-compose`, you can:
-1.  Modify `setup.sh` to use `docker-compose` by changing the `COMPOSE_CMD` variable.
-2.  Or, use the manual commands listed below with `docker-compose`.
+The `setup.sh` script attempts to auto-detect `podman-compose` or `docker-compose`.
+- If both are found, it will prompt you to choose which one to use for the current session (defaulting to `podman-compose`).
+- If only one is found, it will use that.
+- If neither is found, it defaults to `podman-compose` and issues a warning.
+You will be informed which compose command is being used.
+
+If you wish to override the auto-detection or default behavior, you can modify the `COMPOSE_CMD` variable directly within the `setup.sh` script.
 
 ```bash
 # Start the environment (uses existing image)
@@ -473,10 +477,12 @@ Docker Desktop users should configure resources via the Docker Desktop GUI setti
    - The setup includes font packages to minimize PDF generation warnings
    - Some warnings may still appear but are non-critical
 
-5. **Permission issues**:
-   ```bash
-   chmod -R a+rwx postgres-data
-   ```
+5. **Permission issues (especially with `postgres-data` volume)**:
+   - **General Fix**: Ensure your user has read/write permissions to the `./postgres-data` directory on the host. Sometimes, a `chmod -R a+rwx postgres-data` might be needed, but use with caution as it gives universal access.
+   - **Podman (Rootless) Specific**: Rootless Podman uses user namespaces, which can lead to UID/GID mismatches between the host and the container for volume mounts. If the PostgreSQL container cannot write to the `postgres-data` volume:
+        - You might see errors related to `initdb` failing or permission denied on files within `/var/lib/postgresql/data` inside the container.
+        - **Quick Assessment/Workaround (use with understanding):** Running Podman as root (rootfull Podman, e.g., `sudo podman-compose up -d`) often bypasses these complex UID/GID mapping issues because the containers effectively run as root with direct access to host paths. However, running containers as root has security implications and is generally not recommended for production or if rootless operation is a requirement.
+        - For persistent rootless setups, you might need to investigate Podman's UID mapping options (`--uidmap`), `userns=keep-id` volume mount option, or ensure the host directory has permissions accommodating the container's internal user (often `postgres`, UID `999` or `70` in official images, but can vary). The `postgres` image typically tries to `chown` the data directory on startup if it's empty and permissions allow.
 
 6. **External disk access issues**:
    - Ensure Podman machine is configured with volume mounting

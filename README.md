@@ -1,6 +1,8 @@
-# Odoo 18 Development Environment (Podman)
+# Odoo 18 Development Environment (Docker / Podman)
 
-This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers optimized for Apple Silicon, supporting both custom module development and Odoo core development.
+This setup provides Odoo 18 with PostgreSQL 15 running in Docker (or Podman) containers, optimized for Apple Silicon and other platforms. It supports both custom module development and Odoo core development.
+
+**Note:** This guide primarily uses `podman` and `podman-compose` commands, which are often compatible with `docker` and `docker-compose`. If you are using Docker, you can typically substitute `docker` for `podman` and `docker-compose` for `podman-compose`. Specific differences or requirements for Docker Desktop will be noted where applicable.
 
 ## Table of Contents
 
@@ -37,21 +39,31 @@ This setup provides Odoo 18 with PostgreSQL 15 running in Podman containers opti
 
 ## Prerequisites
 
-1. **Podman installed**: `brew install podman`
+1.  **Containerization Tool**:
+    *   **Podman (Recommended for macOS/Linux)**:
+        *   Install Podman: `brew install podman` (macOS) or use your Linux package manager.
+        *   Initialize Podman machine (macOS/Windows with WSL):
+            ```bash
+            podman machine init
+            podman machine start
+            ```
+    *   **Docker Desktop (Alternative for macOS/Windows/Linux)**:
+        *   Download and install from the [official Docker website](https://www.docker.com/products/docker-desktop/).
+        *   Ensure Docker Desktop is running.
 
-2. **Podman machine initialized**:
-   ```bash
-   podman machine init
-   podman machine start
-   ```
+2.  **Compose Tool**:
+    *   **Podman Compose**: `brew install podman-compose` (macOS) or `pip install podman-compose` (Linux).
+    *   **Docker Compose**: Usually included with Docker Desktop. If not, follow Docker's installation guide.
 
-3. **Podman Compose**: `brew install podman-compose`
+**Note for Docker Users:** While `podman-compose` is used in examples, `docker-compose` commands are generally identical. The `setup.sh` script attempts to use `podman-compose` by default but can be modified if needed.
 
-## Podman Machine Configuration
+## Podman Machine / Docker Desktop Configuration
 
 ### For Projects on External Disks
 
-If your project is located on an external disk (SSD, USB drive, etc.), you need to configure Podman machine with volume mounting:
+If your project is located on an external disk (SSD, USB drive, etc.), you need to configure your containerization tool for volume mounting:
+
+**For Podman:**
 
 ```bash
 # Stop and remove existing machine
@@ -67,9 +79,17 @@ podman machine start
 
 **Note**: Replace `/Volumes/SSD` with the actual path to your external disk where the project is located.
 
+**For Docker Desktop (macOS/Windows):**
+- Open Docker Desktop settings.
+- Navigate to "Resources" > "File sharing".
+- Add the path to your external disk (or its parent directory) to the list of shared directories.
+- Apply and restart Docker Desktop if prompted.
+
 ### Resource Optimization
 
-For better performance on Apple Silicon (M1/M2/M3):
+For better performance (especially on Apple Silicon M1/M2/M3):
+
+**For Podman:**
 
 ```bash
 # Stop machine
@@ -82,16 +102,29 @@ podman machine set --cpus 4 --memory 8192
 podman machine start
 ```
 
+**For Docker Desktop:**
+- Open Docker Desktop settings.
+- Navigate to "Resources" > "Advanced".
+- Adjust CPUs and Memory as needed (e.g., 4 CPUs, 8GB Memory).
+- Apply and restart.
+
 ### Verification
 
-Check that your external disk is accessible:
+Check that your external disk is accessible (replace `/path/to/your/project` with the actual path):
 
+**For Podman:**
 ```bash
-# List mounted volumes
+# List mounted volumes (shows machine config, including mounts)
 podman machine inspect
 
 # Test access to your project directory
-podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpine ls /workspace
+podman run --rm -v /path/to/your/project:/workspace alpine ls /workspace
+```
+
+**For Docker:**
+```bash
+# Test access to your project directory (ensure it's shared in Docker Desktop settings)
+docker run --rm -v /path/to/your/project:/workspace alpine ls /workspace
 ```
 
 ## Quick Start
@@ -151,6 +184,9 @@ This mode is perfect for developing your own Odoo modules:
 # Your custom modules go here
 mkdir -p addons/my_module
 # Start the environment
+# This script uses podman-compose by default.
+# If using docker-compose, you might run: docker-compose up -d
+# Or modify setup.sh to use docker-compose.
 ./setup.sh start
 ```
 
@@ -179,10 +215,13 @@ This mode allows you to modify Odoo's core source code:
 
 3. **Start the environment**:
    ```bash
+   # This script uses podman-compose by default.
+   # If using docker-compose, you might run: docker-compose up -d
+   # Or modify setup.sh to use docker-compose.
    ./setup.sh start
    ```
 
-**Note**: When developing core, changes to Odoo source code require container restart to take effect.
+**Note**: When developing core, changes to Odoo source code require container restart (e.g., `podman restart odoo-app` or `docker restart odoo-app`) to take effect.
 
 > **Tip:** For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).
 
@@ -255,6 +294,10 @@ EXPOSED_PG_PORT=5432
 
 ### Using setup.sh (Recommended)
 
+The `setup.sh` script is configured to use `podman-compose`. If you primarily use `docker-compose`, you can:
+1.  Modify `setup.sh` to use `docker-compose` by changing the `COMPOSE_CMD` variable.
+2.  Or, use the manual commands listed below with `docker-compose`.
+
 ```bash
 # Start the environment (uses existing image)
 ./setup.sh start
@@ -271,8 +314,10 @@ EXPOSED_PG_PORT=5432
 
 ### Manual Commands
 
+Replace `podman-compose` with `docker-compose` and `podman` with `docker` if you are using Docker.
+
 ```bash
-# Start containers
+# Start containers (e.g., podman-compose up -d or docker-compose up -d)
 podman-compose up -d
 
 # Stop containers
@@ -284,10 +329,10 @@ podman-compose logs -f
 # Rebuild custom image
 podman-compose build --no-cache
 
-# Access Odoo container shell
+# Access Odoo container shell (e.g., podman exec -it odoo-app /bin/bash or docker exec -it odoo-app /bin/bash)
 podman exec -it odoo-app /bin/bash
 
-# Check container status
+# Check container status (e.g., podman ps -a or docker ps -a)
 podman ps -a
 ```
 
@@ -316,7 +361,10 @@ podman ps -a
 
 3. **Restart Odoo** to load the new module:
    ```bash
+   # For Podman:
    podman restart odoo-app
+   # For Docker:
+   # docker restart odoo-app
    ```
 
 ### Adding Python Dependencies
@@ -349,12 +397,13 @@ If your custom modules require additional Python packages (e.g., `pyjwt` for JWT
    # Use the setup script to rebuild and start
    ./setup.sh rebuild
    
-   # Or manually rebuild
+   # Or manually rebuild (e.g., podman-compose build --no-cache && podman-compose up -d)
+   # (docker-compose build --no-cache && docker-compose up -d)
    podman-compose build --no-cache
    podman-compose up -d
    ```
 
-**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect. Use `./setup.sh rebuild` for convenience.
+**Note**: After adding new Python dependencies, you must rebuild the Docker image for the changes to take effect. Use `./setup.sh rebuild` (recommended) or your compose tool's build command.
 
 > **For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).**
 
@@ -385,23 +434,24 @@ EXPOSED_ODOO_PORT=8080
 ./setup.sh start
 ```
 
-## Apple Silicon Optimization
+## Apple Silicon Optimization (Podman)
 
 ### Resource Allocation
 
-For better performance on M1/M2/M3:
+For better performance on M1/M2/M3 with Podman:
 
 ```bash
 podman machine stop
 podman machine set --cpus 4 --memory 8192
 podman machine start
 ```
+Docker Desktop users should configure resources via the Docker Desktop GUI settings as mentioned earlier.
 
 ### Performance Notes
 
-- **Volume mounts**: May have slower performance on macOS
-- **First startup**: Takes longer due to ARM64 image optimizations
-- **File watching**: Less efficient than on Linux
+- **Volume mounts**: May have slower performance on macOS with both Docker Desktop and Podman compared to native Linux.
+- **First startup**: Takes longer due to ARM64 image optimizations.
+- **File watching**: Less efficient than on Linux.
 
 ## Troubleshooting
 
@@ -413,10 +463,10 @@ podman machine start
 
 2. **Database connection issues**:
    - Verify credentials in `.env` match `odoo.conf.template`
-   - Check if database exists: `podman exec odoo-db psql -U odoo -l`
+   - Check if database exists (e.g., `podman exec odoo-db psql -U odoo -l` or `docker exec odoo-db psql -U odoo -l`)
 
 3. **Module loading issues**:
-   - Check Odoo logs: `podman logs odoo-app`
+   - Check Odoo logs (e.g., `podman logs odoo-app` or `docker logs odoo-app`)
    - Verify module structure and `__manifest__.py`
 
 4. **Font warnings**:
@@ -435,6 +485,8 @@ podman machine start
 
 ### Debug Commands
 
+(Replace `podman` with `docker` if using Docker)
+
 ```bash
 # Check container logs
 podman logs odoo-app
@@ -444,17 +496,21 @@ podman logs odoo-db
 podman exec odoo-app cat /etc/odoo/odoo.conf
 
 # Test database connection
-podman exec odoo-app psql -h db -U odoo -d postgres -c "SELECT 1"
+podman exec odoo-app psql -h db -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c "SELECT 1"
 
 # Check available fonts
 podman exec odoo-app fc-list
 
-# Check Podman machine status
+# Check Podman machine status (Podman specific)
 podman machine list
 podman machine inspect
 
-# Test external disk access
-podman run --rm -v /Volumes/SSD/Documents-SSD/Tools/odoo-podman:/workspace alpine ls /workspace
+# Test external disk access (replace with your project path)
+# For Podman:
+# podman run --rm -v /path/to/your/project:/workspace alpine ls /workspace
+# For Docker:
+# docker run --rm -v /path/to/your/project:/workspace alpine ls /workspace
+podman run --rm -v /path/to/your/project:/workspace alpine ls /workspace
 ```
 
 > **For advanced debugging and IDE integration, see the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md).**
@@ -477,7 +533,7 @@ A: See the [VSCode + Podman Setup Guide](./VSCode-Podman-Guide.md) for step-by-s
 A: For security, `.env` is not tracked in git. Copy `sample-.env` to `.env` and edit as needed.
 
 **Q: How do I use this on an external disk?**
-A: See the [Podman Machine Configuration](#podman-machine-configuration) section for instructions on mounting external volumes.
+A: See the [Podman Machine / Docker Desktop Configuration](#podman-machine--docker-desktop-configuration) section, specifically the "For Projects on External Disks" part.
 
 ## Features
 

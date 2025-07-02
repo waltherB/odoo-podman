@@ -483,6 +483,16 @@ Docker Desktop users should configure resources via the Docker Desktop GUI setti
    - Check machine configuration: `podman machine inspect`
    - Reinitialize machine if needed with proper volume flags
 
+7. **OCI Format Warnings with Podman Builds**:
+   - If you encounter warnings related to "OCI image format" when building images with Podman (e.g., via `podman-compose build`), this might be due to the base image or specific instructions conflicting with strict OCI format expectations.
+   - **Podman Tip:** The `./setup.sh rebuild` command now attempts to automatically set `BUILDAH_FORMAT=docker` when using `podman-compose` to help avoid these warnings by forcing the Docker v2 image format.
+   - If you are running `podman-compose build` manually and see these warnings, you can try:
+     ```bash
+     export BUILDAH_FORMAT=docker
+     podman-compose build --no-cache
+     ```
+   - This setting is specific to the Podman build process (Buildah engine). Docker users typically do not need this.
+
 ### Debug Commands
 
 (Replace `podman` with `docker` if using Docker)

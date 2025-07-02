@@ -6,7 +6,17 @@ FROM odoo:18
 SHELL ["/bin/sh", "-c"]
 
 USER root
-RUN apt-get update && apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && rm -rf /var/lib/apt/lists/*
+
+# Attempt to refresh GPG keys for Ubuntu repositories to avoid NO_PUBKEY errors.
+# Install essential keyring and certificate packages first.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gnupg ubuntu-keyring ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Proceed with installing main dependencies
+RUN apt-get update && \
+    apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && \
+    rm -rf /var/lib/apt/lists/*
 
 # Copy and install Python requirements (if requirements.txt exists)
 COPY requirements.txt /tmp/requirements.txt

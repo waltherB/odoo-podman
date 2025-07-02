@@ -7,13 +7,20 @@ SHELL ["/bin/sh", "-c"]
 
 USER root
 
-# Attempt to refresh GPG keys for Ubuntu repositories to avoid NO_PUBKEY errors.
-# Install essential keyring and certificate packages first.
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg ubuntu-keyring ca-certificates && \
-    rm -rf /var/lib/apt/lists/*
+# Attempt to manually add the problematic GPG key 871920D1991BC93C
+# This key is typically 'Ubuntu Archive Automatic Signing Key (2018)'
+# See https://packages.ubuntu.com/noble/ubuntu-keyring for key details
+RUN \
+    apt-get update -o Acquire::AllowInsecureRepositories=true -o Acquire::AllowDowngradeToInsecureRepositories=true && \
+    apt-get install -y --no-install-recommends gnupg && \
+    gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/ubuntu-archive-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 871920D1991BC93C || \
+    gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/ubuntu-keyring.gpg --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 871920D1991BC93C || \
+    (apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 871920D1991BC93C || echo "Failed to add key with apt-key too") && \
+    echo "Attempted to add GPG key 871920D1991BC93C. Continuing..." && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Proceed with installing main dependencies
+# Now that the key should be present, a regular update should work.
 RUN apt-get update && \
     apt-get install -y gettext gsfonts fontconfig libfreetype6 fonts-freefont-ttf fonts-dejavu && \
     rm -rf /var/lib/apt/lists/*

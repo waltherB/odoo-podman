@@ -1,6 +1,8 @@
-# 🧠 VS Code + Podman for Odoo Development
+# 🧠 VS Code + Docker / Podman for Odoo Development
 
-This guide shows how to set up **Visual Studio Code** (VS Code) for Odoo development using the [odoo-podman](https://github.com/waltherB/odoo-podman) repository and **Podman** as the container engine.
+This guide shows how to set up **Visual Studio Code** (VS Code) for Odoo development using the [odoo-podman](https://github.com/waltherB/odoo-podman) repository (which supports both Docker and Podman) and your chosen container engine.
+
+**Note:** This guide uses `podman` and `podman-compose` in examples. If you are using Docker, substitute `docker` for `podman` and `docker-compose` for `podman-compose`. The `setup.sh` script provided in the main project attempts to auto-detect your compose tool.
 
 ---
 
@@ -9,7 +11,7 @@ This guide shows how to set up **Visual Studio Code** (VS Code) for Odoo develop
   - [Table of Contents](#table-of-contents)
   - [🚀 Prerequisites](#-prerequisites)
   - [🧱 Clone the Repository](#-clone-the-repository)
-  - [⚙️ Start the Podman Environment](#️-start-the-podman-environment)
+  - [⚙️ Start the Container Environment](#️-start-the-container-environment)
   - [🛠 Open the Project in VS Code](#-open-the-project-in-vs-code)
   - [🧩 Install Odoo Extension for VS Code](#-install-odoo-extension-for-vs-code)
   - [🧠 Configure Python Environment](#-configure-python-environment)
@@ -26,8 +28,10 @@ This guide shows how to set up **Visual Studio Code** (VS Code) for Odoo develop
 
 ## 🚀 Prerequisites
 - [VS Code](https://code.visualstudio.com/) installed
-- [Podman](https://podman.io/) and [podman-compose](https://github.com/containers/podman-compose) installed
-- Git and Python (for local linting/testing)
+- **Containerization Tool & Compose:**
+  - **Podman:** [Podman](https://podman.io/) and [podman-compose](https://github.com/containers/podman-compose) installed.
+  - **Docker:** Docker Desktop installed (which includes `docker` and `docker-compose`).
+- Git and Python (for local linting/testing if not using Dev Containers exclusively)
 - Recommended VS Code extensions:
   - **Python**
   - **Pylance**
@@ -46,12 +50,15 @@ cd odoo-podman
 
 ---
 
-## ⚙️ Start the Podman Environment
-Start all containers using `podman-compose`:
+## ⚙️ Start the Container Environment
+Start all containers using your compose tool (e.g., `podman-compose` or `docker-compose`):
 ```bash
+# For Podman:
 podman-compose up -d
+# For Docker:
+# docker-compose up -d
 ```
-Or use the setup script:
+Or use the setup script (which attempts to auto-detect your compose tool):
 ```bash
 ./setup.sh start
 ```
@@ -107,7 +114,7 @@ pip install pylint-odoo debugpy ruff
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Attach to Odoo in Podman",
+      "name": "Attach to Odoo in Container",
       "type": "python",
       "request": "attach",
       "connect": {
@@ -167,11 +174,14 @@ This will launch Odoo with debugpy enabled and ready for VS Code debugging.
 
 ## 🧼 Stop the Environment
 ```bash
+# For Podman:
 podman-compose down
+# For Docker:
+# docker-compose down
 ```
-Or use the setup script:
+Or use the setup script (which attempts to auto-detect your compose tool):
 ```bash
-./setup.sh delete
+./setup.sh delete # or ./setup.sh stop if you just want to stop without deleting data
 ```
 
 ---
@@ -181,7 +191,7 @@ Or use the setup script:
 Create `.devcontainer/devcontainer.json`:
 ```json
 {
-  "name": "Odoo Dev (Podman)",
+  "name": "Odoo Dev (Docker/Podman)",
   "context": "..",
   "dockerFile": "../Dockerfile",
   "workspaceFolder": "/opt/odoo",

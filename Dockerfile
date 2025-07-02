@@ -1,6 +1,7 @@
 FROM odoo:18
 
-# Explicitly set shell to the default /bin/sh -c for broader compatibility
+# Explicitly set shell to the default /bin/sh -c for broader compatibility,
+# immediately after FROM to override any base image SHELL settings early.
 # This can help avoid issues with base image SHELL instructions when building for OCI format.
 SHELL ["/bin/sh", "-c"]
 
@@ -14,4 +15,4 @@ RUN if [ -f /tmp/requirements.txt ]; then pip3 install --break-system-packages -
 COPY start-debugpy.sh /start-debugpy.sh
 RUN chmod +x /start-debugpy.sh
 
-USER odoo 
+USER odoo

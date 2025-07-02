@@ -40,7 +40,16 @@ function start_env() {
 
 function rebuild_env() {
   echo -e "${green}Rebuilding Docker image and starting Odoo 18 development environment...${reset}"
-  ${COMPOSE_CMD} build --no-cache
+
+  if [ "${COMPOSE_CMD}" = "podman-compose" ]; then
+    echo -e "${green}Podman detected, setting BUILDAH_FORMAT=docker for build to potentially avoid OCI warnings.${reset}"
+    export BUILDAH_FORMAT=docker
+    ${COMPOSE_CMD} build --no-cache
+    unset BUILDAH_FORMAT # Unset after build to not affect other potential podman commands
+  else
+    ${COMPOSE_CMD} build --no-cache
+  fi
+
   ${COMPOSE_CMD} up -d
   echo -e "${green}Odoo should be available at http://localhost:${ODOO_PORT}${reset}"
 }

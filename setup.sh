@@ -43,7 +43,7 @@ function usage() {
 }
 
 function start_env() {
-  echo -e "${green}Starting Odoo 18 development environment...${reset}"
+  echo -e "${green}Starting Odoo ${ODOO_VERSION} development environment...${reset}"
   ${COMPOSE_CMD} up -d
   echo -e "${green}Odoo should be available at http://localhost:${ODOO_PORT}${reset}"
 }
